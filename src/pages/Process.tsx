@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Archive, ChevronDown, ClipboardList, Loader2, Trash2 } from "lucide-react";
+import { Archive, ChevronDown, ClipboardList, Loader2, Trash2, Check, Undo2 } from "lucide-react";
 import { ZoomableImage, type LightboxImage } from "@/components/ImageLib";
 import { useI18n } from "@/i18n";
 
@@ -14,6 +14,7 @@ type OrderItem = {
   orderId: number;
   productId: number | null;
   name: string;
+  productName: string | null;
   quantity: number;
   actualQuantity: number | null;
   size: string | null;
@@ -28,11 +29,12 @@ type Order = {
   id: number;
   orderNo: string;
   remark: string | null;
+  confirmed: boolean;
   createdAt: Date;
   items: OrderItem[];
 };
 
-function ItemCard({ item, images, index }: { item: OrderItem; images: LightboxImage[]; index: number }) {
+function ItemCard({ item, images, index, readOnly }: { item: OrderItem; images: LightboxImage[]; index: number; readOnly?: boolean }) {
   const utils = trpc.useUtils();
   const { t } = useI18n();
   const [actual, setActual] = useState<string>(
@@ -92,7 +94,7 @@ function ItemCard({ item, images, index }: { item: OrderItem; images: LightboxIm
       <div className="relative aspect-square bg-background">
         <ZoomableImage
           src={item.imageData}
-          title={item.name}
+          title={item.productName ?? item.name}
           images={images}
           index={index}
           className="h-full w-full"
@@ -112,16 +114,22 @@ function ItemCard({ item, images, index }: { item: OrderItem; images: LightboxIm
       {/* 信息区 */}
       <div className="flex flex-1 flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
-          <span
-            className={`text-sm font-bold leading-tight ${
-              item.done ? "text-muted-foreground line-through" : "text-foreground"
-            }`}
-          >
-            {item.name}
-          </span>
+          <div className="min-w-0 flex-1">
+            <span
+              className={`block text-sm font-bold leading-tight ${
+                item.done ? "text-muted-foreground line-through" : "text-foreground"
+              }`}
+            >
+              {item.name}
+            </span>
+            {item.productName && item.productName !== item.name && (
+              <span className="block truncate text-xs text-muted-foreground">{item.productName}</span>
+            )}
+          </div>
           <Checkbox
             checked={item.done}
-            onCheckedChange={(v) => onToggle(v === true)}
+            onCheckedChange={(v) => !readOnly && onToggle(v === true)}
+            disabled={readOnly}
             className="mt-0.5 h-6 w-6 shrink-0 border-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           />
         </div>
@@ -154,6 +162,7 @@ function ItemCard({ item, images, index }: { item: OrderItem; images: LightboxIm
             placeholder={String(item.quantity)}
             onChange={(e) => setActual(e.target.value)}
             onBlur={onActualBlur}
+            disabled={readOnly}
             className={`h-8 border-2 bg-background text-sm font-bold ${
               item.actualQuantity !== null && item.actualQuantity !== item.quantity
                 ? "border-amber-500/70 text-amber-400"
@@ -179,12 +188,17 @@ function OrderCard({ order }: { order: Order }) {
     },
   });
 
+  const confirmMut = trpc.orders.setConfirmed.useMutation({
+    onSuccess: () => utils.orders.list.invalidate(),
+    onError: (e) => toast.error(t("confirmFailed") + e.message),
+  });
+
   const doneCount = order.items.filter((i) => i.done).length;
   const allDone = order.items.length > 0 && doneCount === order.items.length;
   // 灯箱整组图片（本提单所有有图明细）
   const images: LightboxImage[] = order.items
     .filter((i) => i.imageData)
-    .map((i) => ({ src: i.imageData!, title: i.name }));
+    .map((i) => ({ src: i.imageData!, title: i.productName ?? i.name }));
 
   return (
     <section
@@ -207,6 +221,11 @@ function OrderCard({ order }: { order: Order }) {
           >
             {allDone ? t("completed") : `${t("processing")} ${doneCount}/${order.items.length}`}
           </Badge>
+          {order.confirmed && (
+            <Badge className="border-2 border-primary/50 bg-primary/10 font-bold text-primary">
+              {t("confirmed")}
+            </Badge>
+          )}
           <span className="text-xs text-muted-foreground">
             {new Date(order.createdAt).toLocaleString()}
           </span>
@@ -217,19 +236,43 @@ function OrderCard({ order }: { order: Order }) {
             </span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => deleteMut.mutate({ id: order.id })}
-          title={t("deleteOrder")}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {order.confirmed ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => confirmMut.mutate({ id: order.id, confirmed: false })}
+              className="border-2 font-bold"
+            >
+              <Undo2 className="mr-1 h-4 w-4" /> {t("undo")}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => {
+                if (!allDone) return toast.error(t("notAllDone"));
+                confirmMut.mutate({ id: order.id, confirmed: true });
+              }}
+              disabled={!allDone || confirmMut.isPending}
+              className="border-2 border-primary font-bold shadow-[0_0_12px_hsl(187_92%_45%/0.3)]"
+            >
+              <Check className="mr-1 h-4 w-4" /> {t("confirm")}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => deleteMut.mutate({ id: order.id })}
+            title={t("deleteOrder")}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
       <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 md:p-4 lg:grid-cols-3 xl:grid-cols-4">
         {order.items.map((it, idx) => (
-          <ItemCard key={it.id} item={it} images={images} index={Math.max(0, order.items.slice(0, idx).filter((i) => i.imageData).length)} />
+          <ItemCard key={it.id} item={it} images={images} index={Math.max(0, order.items.slice(0, idx).filter((i) => i.imageData).length)} readOnly={order.confirmed} />
         ))}
       </div>
     </section>
@@ -256,10 +299,10 @@ export default function ProcessPage() {
     );
 
   const active = orders.filter(
-    (o) => !(o.items.length > 0 && o.items.every((i) => i.done))
+    (o) => !(o.confirmed && o.items.length > 0 && o.items.every((i) => i.done))
   ) as Order[];
   const archived = orders.filter(
-    (o) => o.items.length > 0 && o.items.every((i) => i.done)
+    (o) => o.confirmed && o.items.length > 0 && o.items.every((i) => i.done)
   ) as Order[];
 
   return (

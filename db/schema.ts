@@ -15,6 +15,7 @@ export const orders = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   orderNo: text("order_no").notNull().unique(),
   remark: text("remark"),
+  confirmed: integer("confirmed", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

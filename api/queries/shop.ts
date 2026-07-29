@@ -82,7 +82,7 @@ export async function listOrders() {
   const db = getDb();
   const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
   const rows = await db
-    .select({ item: orderItems, imageData: products.imageData })
+    .select({ item: orderItems, imageData: products.imageData, productName: products.name })
     .from(orderItems)
     .leftJoin(products, eq(orderItems.productId, products.id))
     .orderBy(orderItems.id);
@@ -90,7 +90,7 @@ export async function listOrders() {
     ...o,
     items: rows
       .filter((r) => r.item.orderId === o.id)
-      .map((r) => ({ ...r.item, imageData: r.imageData ?? null })),
+      .map((r) => ({ ...r.item, imageData: r.imageData ?? null, productName: r.productName ?? null })),
   }));
 }
 
@@ -142,4 +142,8 @@ export async function deleteOrder(id: number) {
   const db = getDb();
   await db.delete(orderItems).where(eq(orderItems.orderId, id));
   await db.delete(orders).where(eq(orders.id, id));
+}
+
+export async function setOrderConfirmed(orderId: number, confirmed: boolean) {
+  await getDb().update(orders).set({ confirmed }).where(eq(orders.id, orderId));
 }

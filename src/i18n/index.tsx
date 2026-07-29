@@ -63,6 +63,12 @@ const dict = {
   processing: { en: "Processing", zh: "处理中" },
   archived: { en: "Archived (all completed)", zh: "已归档（全部处理完成）" },
   archivedCount: { en: "orders", zh: "张" },
+  confirm: { en: "Confirm", zh: "确认" },
+  undo: { en: "Undo", zh: "撤销" },
+  confirmed: { en: "Confirmed", zh: "已确认" },
+  undoFailed: { en: "Undo failed: ", zh: "撤销失败：" },
+  confirmFailed: { en: "Confirm failed: ", zh: "确认失败：" },
+  notAllDone: { en: "All items must be processed first", zh: "请先处理完所有明细" },
   declared: { en: "Declared", zh: "申报" },
   actualQty: { en: "Actual Qty", zh: "实际数量" },
   diff: { en: "Diff", zh: "差异" },
@@ -97,6 +103,14 @@ const dict = {
   noItemNames: { en: "No item names yet — add one above", zh: "还没有品名，先在上方添加" },
   selectName: { en: "Select name *", zh: "选择品名 *" },
   unmapped: { en: "Unmapped", zh: "未分组" },
+  // 数据统计
+  stats: { en: "Statistics", zh: "数据统计" },
+  shopCol: { en: "Shop", zh: "店铺" },
+  itemNameCol: { en: "Item Name", zh: "品名" },
+  qtyCol: { en: "Actual Qty", zh: "实际数量" },
+  shopSubtotal: { en: "Subtotal", zh: "小计" },
+  dailyTotal: { en: "Daily Total", zh: "当日合计" },
+  noStatsData: { en: "No confirmed orders yet", zh: "暂无已确认的订单数据" },
 } as const;
 
 export type DictKey = keyof typeof dict;

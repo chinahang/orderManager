@@ -1,8 +1,9 @@
 import { Routes, Route, Link, useLocation, Navigate } from "react-router";
-import { Images, FilePlus2, ClipboardList, PackageOpen, RefreshCcw, Languages } from "lucide-react";
+import { Images, FilePlus2, ClipboardList, PackageOpen, RefreshCcw, Languages, BarChart3 } from "lucide-react";
 import ProductsPage from "./pages/Products";
 import NewOrderPage from "./pages/NewOrder";
 import ProcessPage from "./pages/Process";
+import StatsPage from "./pages/Stats";
 import RoleSelectPage from "./pages/RoleSelect";
 import { useRole, type Role } from "@/hooks/useRole";
 import { useI18n } from "@/i18n";
@@ -33,9 +34,10 @@ export default function App() {
     );
 
   const allNav = [
-    { path: "/", label: t("gallery"), icon: Images, roles: ["仓库"] as Role[] }, // 图库管理仅仓库(管理员)
+    { path: "/", label: t("gallery"), icon: Images, roles: ["仓库"] as Role[] },
     { path: "/new-order", label: t("submitOrder"), icon: FilePlus2, roles: ["大店", "小店"] as Role[] },
     { path: "/process", label: t("processOrders"), icon: ClipboardList, roles: ["仓库"] as Role[] },
+    { path: "/stats", label: t("stats"), icon: BarChart3, roles: ["仓库"] as Role[] },
   ];
   const nav = allNav.filter((n) => n.roles.includes(role));
   const defaultPath = role === "仓库" ? "/process" : "/new-order";
@@ -94,6 +96,7 @@ export default function App() {
             element={role === "仓库" ? <Navigate to="/process" replace /> : <NewOrderPage role={role} />}
           />
           <Route path="/process" element={role === "仓库" ? <ProcessPage /> : <Navigate to={defaultPath} replace />} />
+          <Route path="/stats" element={role === "仓库" ? <StatsPage /> : <Navigate to={defaultPath} replace />} />
           <Route path="*" element={<Navigate to={defaultPath} replace />} />
         </Routes>
       </main>

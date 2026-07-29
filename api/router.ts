@@ -15,6 +15,7 @@ import {
   deleteItemName,
   setItemNameProducts,
   deleteOrder,
+  setOrderConfirmed,
 } from "./queries/shop";
 
 export const appRouter = createRouter({
@@ -61,6 +62,9 @@ export const appRouter = createRouter({
     delete: publicQuery
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => deleteOrder(input.id)),
+    setConfirmed: publicQuery
+      .input(z.object({ id: z.number(), confirmed: z.boolean() }))
+      .mutation(({ input }) => setOrderConfirmed(input.id, input.confirmed)),
   }),
 
   settings: createRouter({

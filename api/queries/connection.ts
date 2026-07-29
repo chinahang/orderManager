@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_no TEXT NOT NULL UNIQUE,
   remark TEXT,
+  confirmed INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
 );
 CREATE TABLE IF NOT EXISTS settings (
@@ -70,6 +71,8 @@ export function getDb() {
     const sqlite = new Database(dbPath);
     sqlite.pragma("journal_mode = WAL");
     sqlite.exec(DDL);
+    // 兼容旧库：orders 表新增 confirmed 列
+    try { sqlite.exec(`ALTER TABLE orders ADD COLUMN confirmed INTEGER NOT NULL DEFAULT 0`); } catch {} // eslint-disable-line no-empty
     instance = drizzle(sqlite, { schema: fullSchema });
   }
   return instance;
