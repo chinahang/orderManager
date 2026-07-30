@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, MousePointerClick, Plus, Trash2 } from "lucide-react";
-import { ZoomableImage } from "@/components/ImageLib";
+import { Loader2, MousePointerClick, Plus, Trash2, Expand } from "lucide-react";
+import { ZoomableImage, useLightbox, SelectionCarousel } from "@/components/ImageLib";
 import { useI18n } from "@/i18n";
 
 interface ItemRow {
@@ -40,6 +40,7 @@ const emptyItem = (shop = ""): ItemRow => ({
 export default function NewOrderPage({ role }: { role: Role }) {
   const navigate = useNavigate();
   const { t, lang } = useI18n();
+  const { open: openLightbox } = useLightbox();
   const { data: products } = trpc.products.list.useQuery();
   const { data: sizeOptions } = trpc.settings.getSizeOptions.useQuery();
   const { data: mappings } = trpc.itemNames.listMappings.useQuery();
@@ -53,6 +54,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
 
   const [items, setItems] = useState<ItemRow[]>([]);
   const [orderRemark, setOrderRemark] = useState("");
+  const [pickerGroupKey, setPickerGroupKey] = useState<string | null>(null);
 
   // 图片 → 品名 反查（一张图可对应多个品名，默认取第一个）
   function namesOfProduct(productId: number): string[] {
@@ -85,6 +87,14 @@ export default function NewOrderPage({ role }: { role: Role }) {
     const merged = [...new Set([...linked, ...all])];
     return merged;
   }
+
+  // 当前订单中各 productId 的数量（用于大图选品弹窗计数）
+  const currentCounts = new Map<number, number>();
+  for (const it of items) {
+    if (it.productId) currentCounts.set(it.productId, (currentCounts.get(it.productId) ?? 0) + 1);
+  }
+
+  const pickerGroup = groups.find((g) => g.key === pickerGroupKey);
 
   function update(idx: number, patch: Partial<ItemRow>) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -129,10 +139,18 @@ export default function NewOrderPage({ role }: { role: Role }) {
                 <h3 className="mb-2 flex items-center gap-2 text-sm font-extrabold text-foreground">
                   <span className="h-3 w-1 rounded-full bg-primary" />
                   {g.label}
+                  <button
+                    onClick={() => setPickerGroupKey(g.key)}
+                    className="ml-auto flex items-center gap-1 rounded-lg border-2 border-border px-2 py-0.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary hover:text-primary"
+                  >
+                    <Expand className="h-3.5 w-3.5" />
+                    {t("largeImagePick")}
+                  </button>
                 </h3>
                 <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-5 md:grid-cols-7 md:gap-4 lg:grid-cols-9">
-                  {g.products.map((p) => {
+                  {g.products.map((p, idx) => {
                     const count = items.filter((i) => i.productId === p.id).length;
+                    const images = g.products.map((pr) => ({ src: pr.imageData, title: pr.name }));
                     return (
                       <div
                         key={`${g.key}-${p.id}`}
@@ -142,7 +160,11 @@ export default function NewOrderPage({ role }: { role: Role }) {
                             : "border-border hover:border-primary/60"
                         }`}
                       >
-                        <button onClick={() => addFromProduct(p)} className="block w-full" title={p.name}>
+                        <button
+                          onClick={() => (count > 0 ? openLightbox(images, idx) : addFromProduct(p))}
+                          className="block w-full"
+                          title={p.name}
+                        >
                           <div className="aspect-square overflow-hidden">
                             <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
                           </div>
@@ -260,6 +282,18 @@ export default function NewOrderPage({ role }: { role: Role }) {
           {t("submitBtn")}（{items.length} {t("itemsTotal")}）
         </Button>
       </div>
+
+      {/* 大图选品轮播 */}
+      {pickerGroup && (
+        <SelectionCarousel
+          open={pickerGroupKey !== null}
+          onOpenChange={(v) => { if (!v) setPickerGroupKey(null); }}
+          groupName={pickerGroup.label}
+          images={pickerGroup.products.map((p) => ({ id: p.id, src: p.imageData, title: p.name }))}
+          currentCounts={currentCounts}
+          onAdd={(idx) => addFromProduct(pickerGroup.products[idx])}
+        />
+      )}
     </div>
   );
 }

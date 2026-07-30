@@ -111,6 +111,14 @@ const dict = {
   shopSubtotal: { en: "Subtotal", zh: "小计" },
   dailyTotal: { en: "Daily Total", zh: "当日合计" },
   noStatsData: { en: "No confirmed orders yet", zh: "暂无已确认的订单数据" },
+  // 大图选品
+  largeImagePick: { en: "Large view", zh: "大图选品" },
+  selectMode: { en: "Select", zh: "选择" },
+  cancelSelect: { en: "Cancel", zh: "取消" },
+  addSelected: { en: "Add", zh: "添加" },
+  selectedCount: { en: "selected", zh: "已选" },
+  addImg: { en: "Add", zh: "添加" },
+  imgAdded: { en: "Added", zh: "已添加" },
 } as const;
 
 export type DictKey = keyof typeof dict;

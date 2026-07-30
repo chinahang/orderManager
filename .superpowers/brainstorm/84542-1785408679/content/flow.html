@@ -1,0 +1,129 @@
+<h2>选品交互：Apple Photos 风格</h2>
+<p class="subtitle">分组标题旁加「大图选品」按钮 → 全屏大图弹窗 → 默认点击即添加 / 可切批量选择</p>
+
+<div class="section">
+  <h3>入口：分组标题旁的按钮</h3>
+  <div class="mockup">
+    <div class="mockup-header">选品区 — 分组标题</div>
+    <div class="mockup-body" style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="width:4px;height:18px;background:hsl(187,92%,45%);border-radius:4px;"></div>
+        <span style="font-weight:800;font-size:15px;">羽绒被</span>
+        <button style="margin-left:auto;padding:5px 12px;border:2px solid hsl(187,92%,45%);border-radius:8px;background:transparent;color:hsl(187,92%,45%);font-weight:700;font-size:12px;cursor:pointer;">📐 大图选品</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+        <div class="placeholder" style="aspect-ratio:1;border-radius:6px;background:hsl(187,92%,15%);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>弹窗：两种模式</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">默认模式 — 点击即添加</div>
+      <div class="mockup-body" style="padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);padding-bottom:10px;margin-bottom:14px;">
+          <span style="font-weight:800;font-size:14px;">羽绒被</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="mock-button" style="padding:4px 12px;font-size:12px;border:2px solid var(--border);">选择</button>
+            <span style="font-size:20px;cursor:pointer;color:var(--muted-foreground);">&times;</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);box-shadow:0 0 14px hsl(187,92%,45%/0.35);">
+            <span style="position:absolute;top:6px;right:6px;background:hsl(187,92%,45%);color:black;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">2</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色A</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;background:hsl(187,92%,12%);">
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色B</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;background:hsl(187,92%,12%);cursor:pointer;">
+            <span style="display:block;text-align:center;padding-top:35%;font-size:10px;color:hsl(187,92%,45%);">👆 点击添加</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;background:hsl(187,92%,12%);">
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色D</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;background:hsl(187,92%,12%);">
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色E</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;background:hsl(187,92%,12%);">
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色F</span>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--muted-foreground);margin-top:14px;text-align:center;">点一张添加一条明细，已添加的显示计数</p>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-header">批量选择模式</div>
+      <div class="mockup-body" style="padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);padding-bottom:10px;margin-bottom:14px;">
+          <span style="font-weight:800;font-size:14px;">已选 3 张</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="mock-button" style="padding:4px 12px;font-size:12px;border:2px solid hsl(187,92%,45%);background:hsl(187,92%,45%);color:black;">取消</button>
+            <span style="font-size:20px;cursor:pointer;color:var(--muted-foreground);">&times;</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);box-shadow:0 0 14px hsl(187,92%,45%/0.35);">
+            <span style="position:absolute;top:6px;left:6px;background:hsl(187,92%,45%);color:black;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色A</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);box-shadow:0 0 14px hsl(187,92%,45%/0.35);">
+            <span style="position:absolute;top:6px;left:6px;background:hsl(187,92%,45%);color:black;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色B</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);">
+            <span style="position:absolute;top:6px;left:6px;border:2px solid var(--muted-foreground);background:transparent;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色C</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);box-shadow:0 0 14px hsl(187,92%,45%/0.35);">
+            <span style="position:absolute;top:6px;left:6px;background:hsl(187,92%,45%);color:black;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色D</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);">
+            <span style="position:absolute;top:6px;left:6px;border:2px solid var(--muted-foreground);background:transparent;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色E</span>
+          </div>
+          <div class="placeholder" style="aspect-ratio:1;border-radius:8px;position:relative;background:hsl(187,92%,12%);">
+            <span style="position:absolute;top:6px;left:6px;border:2px solid var(--muted-foreground);background:transparent;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;">✓</span>
+            <span style="display:block;text-align:center;padding-top:40%;font-size:10px;color:var(--muted-foreground);">花色F</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--border);">
+          <button class="mock-button" style="width:100%;padding:14px;background:hsl(187,92%,45%);color:black;font-size:15px;font-weight:800;">添加 (3)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>交互规则</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px;font-weight:700;">默认模式</td>
+      <td style="padding:8px;">点一张 → 立即添加到明细列表 → 卡片右上角计数 +1</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px;font-weight:700;">进入批量</td>
+      <td style="padding:8px;">点右上「选择」→ 每张左上出勾选圈 → 点选打勾 → 底部「添加(N)」确认</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px;font-weight:700;">已添加图片</td>
+      <td style="padding:8px;">仍可再次点击/选择，允许同款式多条明细（不同尺寸数量）</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px;font-weight:700;">关闭弹窗</td>
+      <td style="padding:8px;">✕ / 遮罩点击 / Esc → 回到明细编辑区填写数量尺寸</td>
+    </tr>
+  </table>
+</div>

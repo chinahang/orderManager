@@ -36,3 +36,4 @@
 4. **Frontend runs via Vite dev-server plugin** in dev (`@hono/vite-dev-server`). API routes are under `/api/trpc/*`.
 5. **tRPC client uses `httpBatchLink`** with `superjson` transformer and `credentials: "include"`.
 6. **`db/relations.ts` is empty** — no Drizzle relations defined yet.
+7. **提单页去重规则：同一图片只能创建一条明细。** 画廊卡片点击已添加的图片 → 进入灯箱预览（不可再添加）。大图选品轮播中已添加的图片显示"已添加"，默认模式不可点击，选择模式不可勾选。
