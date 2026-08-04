@@ -237,10 +237,10 @@ export default function NewOrderPage({ role }: { role: Role }) {
               <Input
                 className={`w-[calc(33.3%-6px)] sm:w-20 ${inputCls}`}
                 type="number"
-                min={1}
+                min={0}
                 placeholder={t("qty")}
                 value={it.quantity}
-                onChange={(e) => update(idx, { quantity: Math.max(1, Number(e.target.value) || 1) })}
+                onChange={(e) => update(idx, { quantity: Math.max(0, Number(e.target.value) || 0) })}
               />
               <Select value={it.size} onValueChange={(v) => update(idx, { size: v })}>
                 <SelectTrigger className={`w-[calc(33.3%-6px)] sm:w-28 ${inputCls}`}>
