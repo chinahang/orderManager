@@ -28,6 +28,8 @@ interface ItemRow {
   shop: string;
 }
 
+const SHOW_COUNT = 8;
+
 const emptyItem = (shop = ""): ItemRow => ({
   name: "",
   quantity: 1,
@@ -79,15 +81,6 @@ export default function NewOrderPage({ role }: { role: Role }) {
       : []),
   ];
 
-  /** 明细行品名下拉可选项：该行图片映射的品名 + 全部品名兜底 */
-  function nameOptionsOf(it: ItemRow): string[] {
-    const all = (mappings ?? []).map((m) => m.name);
-    if (!it.productId) return all;
-    const linked = namesOfProduct(it.productId);
-    const merged = [...new Set([...linked, ...all])];
-    return merged;
-  }
-
   // 当前订单中各 productId 的数量（用于大图选品弹窗计数）
   const currentCounts = new Map<number, number>();
   for (const it of items) {
@@ -134,55 +127,114 @@ export default function NewOrderPage({ role }: { role: Role }) {
           <p className="text-sm text-muted-foreground">{t("galleryEmptyHint")}</p>
         ) : (
           <div className="space-y-4">
-            {groups.map((g) => (
-              <div key={g.key}>
-                <h3 className="mb-2 flex items-center gap-2 text-sm font-extrabold text-foreground">
-                  <span className="h-3 w-1 rounded-full bg-primary" />
-                  {g.label}
-                  <button
-                    onClick={() => setPickerGroupKey(g.key)}
-                    className="ml-auto flex items-center gap-1 rounded-lg border-2 border-border px-2 py-0.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary hover:text-primary"
-                  >
-                    <Expand className="h-3.5 w-3.5" />
-                    {t("largeImagePick")}
-                  </button>
-                </h3>
-                <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-5 md:grid-cols-7 md:gap-4 lg:grid-cols-9">
-                  {g.products.map((p, idx) => {
-                    const count = items.filter((i) => i.productId === p.id).length;
-                    const images = g.products.map((pr) => ({ src: pr.imageData, title: pr.name }));
-                    return (
-                      <div
-                        key={`${g.key}-${p.id}`}
-                        className={`gallery-card group relative overflow-hidden rounded-xl border-2 transition-all ${
-                          count > 0
-                            ? "border-primary shadow-[0_0_18px_hsl(187_92%_45%/0.35)]"
-                            : "border-border hover:border-primary/60"
-                        }`}
-                      >
-                        <button
-                          onClick={() => (count > 0 ? openLightbox(images, idx) : addFromProduct(p))}
-                          className="block w-full"
-                          title={p.name}
+            {groups.map((g) => {
+              const images = g.products.map((pr) => ({ src: pr.imageData, title: pr.name }));
+              return (
+                <div key={g.key}>
+                  <h3 className="mb-2 flex items-center gap-2 text-sm font-extrabold text-foreground">
+                    <span className="h-3 w-1 rounded-full bg-primary" />
+                    {g.label}
+                    <button
+                      onClick={() => setPickerGroupKey(g.key)}
+                      className="ml-auto flex items-center gap-1 rounded-lg border-2 border-border px-2 py-0.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary hover:text-primary"
+                    >
+                      <Expand className="h-3.5 w-3.5" />
+                      {t("largeImagePick")}
+                    </button>
+                  </h3>
+                  {/* 前 SHOW_COUNT 张图始终可见 */}
+                  <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-5 md:grid-cols-7 md:gap-4 lg:grid-cols-9">
+                    {g.products.slice(0, SHOW_COUNT).map((p, idx) => {
+                      const count = items.filter((i) => i.productId === p.id).length;
+                      return (
+                        <div
+                          key={`${g.key}-${p.id}`}
+                          className={`gallery-card group relative overflow-hidden rounded-xl border-2 transition-all ${
+                            count > 0
+                              ? "border-primary shadow-[0_0_18px_hsl(187_92%_45%/0.35)]"
+                              : "border-border hover:border-primary/60"
+                          }`}
                         >
-                          <div className="aspect-square overflow-hidden">
-                            <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
-                          </div>
-                          <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
-                            {p.name}
-                          </span>
-                          {count > 0 && (
-                            <span className="absolute right-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-primary bg-primary px-1 text-xs font-extrabold text-primary-foreground">
-                              {count}
+                          <button
+                            onClick={() => (count > 0 ? openLightbox(images, idx) : addFromProduct(p))}
+                            className="block w-full"
+                            title={p.name}
+                          >
+                            <div className="aspect-square overflow-hidden">
+                              <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
+                            </div>
+                            <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
+                              {p.name}
                             </span>
-                          )}
+                            {count > 0 && (
+                              <span className="absolute right-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-primary bg-primary px-1 text-xs font-extrabold text-primary-foreground">
+                                {count}
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* 超过 SHOW_COUNT 张时折叠剩余图片 */}
+                  {g.products.length > SHOW_COUNT && (
+                    <details className="group mt-2">
+                      <summary className="flex cursor-pointer list-none justify-center text-xs font-bold text-primary hover:underline">
+                        <span className="group-open:hidden">
+                          {t("expandMore")} ({g.products.length - SHOW_COUNT})
+                        </span>
+                      </summary>
+                      <div className="mt-2 grid grid-cols-4 gap-2.5 sm:grid-cols-5 md:grid-cols-7 md:gap-4 lg:grid-cols-9">
+                        {g.products.slice(SHOW_COUNT).map((p, idx) => {
+                          const actualIdx = idx + SHOW_COUNT;
+                          const count = items.filter((i) => i.productId === p.id).length;
+                          return (
+                            <div
+                              key={`${g.key}-${p.id}`}
+                              className={`gallery-card group relative overflow-hidden rounded-xl border-2 transition-all ${
+                                count > 0
+                                  ? "border-primary shadow-[0_0_18px_hsl(187_92%_45%/0.35)]"
+                                  : "border-border hover:border-primary/60"
+                              }`}
+                            >
+                              <button
+                                onClick={() => (count > 0 ? openLightbox(images, actualIdx) : addFromProduct(p))}
+                                className="block w-full"
+                                title={p.name}
+                              >
+                                <div className="aspect-square overflow-hidden">
+                                  <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
+                                </div>
+                                <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
+                                  {p.name}
+                                </span>
+                                {count > 0 && (
+                                  <span className="absolute right-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-primary bg-primary px-1 text-xs font-extrabold text-primary-foreground">
+                                    {count}
+                                  </span>
+                                )}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-2 flex justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const details = e.currentTarget.closest("details");
+                            if (details) details.open = false;
+                          }}
+                          className="text-xs font-bold text-muted-foreground hover:text-primary hover:underline"
+                        >
+                          {t("collapse")}
                         </button>
                       </div>
-                    );
-                  })}
+                    </details>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -222,18 +274,13 @@ export default function NewOrderPage({ role }: { role: Role }) {
                   {t("noImage")}
                 </div>
               )}
-              <Select value={it.name} onValueChange={(v) => update(idx, { name: v })}>
-                <SelectTrigger className={`w-full sm:w-40 ${inputCls}`}>
-                  <SelectValue placeholder={t("selectName")} />
-                </SelectTrigger>
-                <SelectContent className="border-2">
-                  {nameOptionsOf(it).map((n) => (
-                    <SelectItem key={n} value={n}>
-                      {n}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {it.productId ? (
+                <span className={`inline-flex w-full items-center truncate rounded-md border-2 bg-secondary/50 px-3 py-2 text-sm font-medium sm:w-40 ${inputCls}`}>
+                  {it.name || "-"}
+                </span>
+              ) : (
+                <Input className={`w-full sm:w-40 ${inputCls}`} placeholder={t("selectName")} value={it.name} onChange={(e) => update(idx, { name: e.target.value })} />
+              )}
               <Input
                 className={`w-[calc(33.3%-6px)] sm:w-20 ${inputCls}`}
                 type="number"

@@ -119,6 +119,8 @@ const dict = {
   selectedCount: { en: "selected", zh: "已选" },
   addImg: { en: "Add", zh: "添加" },
   imgAdded: { en: "Added", zh: "已添加" },
+  expandMore: { en: "Show more", zh: "展开更多" },
+  collapse: { en: "Collapse", zh: "收起" },
 } as const;
 
 export type DictKey = keyof typeof dict;

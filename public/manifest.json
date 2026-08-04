@@ -1,0 +1,11 @@
+{
+  "name": "NANFANG trading co.提单管理系统",
+  "short_name": "提单管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/app-icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
