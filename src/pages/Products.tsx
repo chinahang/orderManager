@@ -3,15 +3,16 @@ import { trpc } from "@/providers/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ImagePlus, Link2, Loader2, Ruler, Trash2, Upload, X } from "lucide-react";
+import { ImagePlus, Link2, Loader2, Ruler, Trash2, Upload, X, ZoomIn } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { fileToDataUrl, ZoomableImage, type LightboxImage } from "@/components/ImageLib";
+import { fileToDataUrl, ZoomableImage, type LightboxImage, useLightbox } from "@/components/ImageLib";
 import { useI18n } from "@/i18n";
 
 export default function ProductsPage() {
   const utils = trpc.useUtils();
   const { t } = useI18n();
   const { data: products, isLoading } = trpc.products.list.useQuery();
+  const { open: openLightbox } = useLightbox();
   const productImageMap = useMemo(() => {
     const map = new Map<number, string>();
     for (const p of products ?? []) map.set(p.id, p.imageData);
@@ -331,6 +332,13 @@ export default function ProductsPage() {
                                 checked={checked}
                                 className="pointer-events-none h-4 w-4 border-2 bg-background/70 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                               />
+                            </span>
+                            <span
+                              onClick={(e) => { e.stopPropagation(); openLightbox(lightboxImages, products?.findIndex((pr) => pr.id === p.id) ?? 0); }}
+                              className="absolute right-1 top-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-background/80 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+                              title={t("zoomIn")}
+                            >
+                              <ZoomIn className="h-3.5 w-3.5" />
                             </span>
                           </button>
                         );
