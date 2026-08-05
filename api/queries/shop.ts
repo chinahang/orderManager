@@ -8,7 +8,7 @@ export async function listItemNameMappings() {
   const db = getDb();
   const names = await db.select().from(itemNames).orderBy(itemNames.name);
   const maps = await db.select().from(productNameMaps);
-  const prods = await db.select({ id: products.id, name: products.name, imageData: products.imageData }).from(products);
+  const prods = await db.select({ id: products.id, name: products.name }).from(products);
   return names.map((n) => ({
     ...n,
     products: maps

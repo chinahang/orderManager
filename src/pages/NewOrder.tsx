@@ -74,8 +74,15 @@ export default function NewOrderPage({ role }: { role: Role }) {
 
   // 图库按映射分组：每个品名一组其映射图片；无映射的图片归入“未分组”
   const mappedProductIds = new Set((mappings ?? []).flatMap((m) => m.products.map((p) => p.id)));
+  const productLookup = new Map(products?.map((p) => [p.id, p]) ?? []);
   const groups: Array<{ key: string; label: string; products: Array<{ id: number; name: string; imageData: string }> }> = [
-    ...(mappings ?? []).map((m) => ({ key: `n-${m.id}`, label: m.name, products: m.products })),
+    ...(mappings ?? []).map((m) => ({
+      key: `n-${m.id}`,
+      label: m.name,
+      products: m.products
+        .map((p) => productLookup.get(p.id))
+        .filter((p): p is NonNullable<typeof p> => !!p),
+    })),
     ...(products?.some((p) => !mappedProductIds.has(p.id))
       ? [{ key: "unmapped", label: t("unmapped"), products: (products ?? []).filter((p) => !mappedProductIds.has(p.id)) }]
       : []),

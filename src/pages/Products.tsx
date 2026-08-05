@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,11 @@ export default function ProductsPage() {
   const utils = trpc.useUtils();
   const { t } = useI18n();
   const { data: products, isLoading } = trpc.products.list.useQuery();
+  const productImageMap = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const p of products ?? []) map.set(p.id, p.imageData);
+    return map;
+  }, [products]);
   const createMut = trpc.products.create.useMutation({
     onSuccess: () => {
       utils.products.list.invalidate();
@@ -85,6 +90,19 @@ export default function ProductsPage() {
     const next = currentIds.includes(productId)
       ? currentIds.filter((x) => x !== productId)
       : [...currentIds, productId];
+    // ponytail: optimistic update, no await
+    utils.itemNames.listMappings.setData(undefined, (old) =>
+      old?.map((m) =>
+        m.id === itemNameId
+          ? {
+              ...m,
+              products: currentIds.includes(productId)
+                ? m.products.filter((p) => p.id !== productId)
+                : [...m.products, { id: productId, name: products?.find((p) => p.id === productId)?.name ?? "" }],
+            }
+          : m,
+      ),
+    );
     mapMut.mutate({ itemNameId, productIds: next });
   }
 
@@ -282,7 +300,7 @@ export default function ProductsPage() {
                       {m.products.map((p) => (
                         <img
                           key={p.id}
-                          src={p.imageData}
+                          src={productImageMap.get(p.id)}
                           alt={p.name}
                           title={p.name}
                           className="h-12 w-12 rounded-lg border-2 border-primary/50 object-cover"
