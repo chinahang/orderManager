@@ -22,7 +22,7 @@ type OrderItem = {
   itemDate: string | null;
   shop: string | null;
   done: boolean;
-  imageData: string | null;
+  imagePath: string | null;
 };
 
 type Order = {
@@ -93,13 +93,13 @@ function ItemCard({ item, images, index, readOnly }: { item: OrderItem; images: 
       {/* 图片区（点击放大） */}
       <div className="relative aspect-square bg-background">
         <ZoomableImage
-          src={item.imageData}
+          src={item.imagePath ? `/images/${item.imagePath}` : null}
           title={item.productName ?? item.name}
           images={images}
           index={index}
           className="h-full w-full"
         />
-        {!item.imageData && (
+        {!item.imagePath && (
           <div className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs text-muted-foreground">
             {t("noImage")}
           </div>
@@ -197,8 +197,8 @@ function OrderCard({ order }: { order: Order }) {
   const allDone = order.items.length > 0 && doneCount === order.items.length;
   // 灯箱整组图片（本提单所有有图明细）
   const images: LightboxImage[] = order.items
-    .filter((i) => i.imageData)
-    .map((i) => ({ src: i.imageData!, title: i.productName ?? i.name }));
+    .filter((i) => i.imagePath)
+    .map((i) => ({ src: `/images/${i.imagePath!}`, title: i.productName ?? i.name }));
 
   return (
     <section
@@ -272,7 +272,7 @@ function OrderCard({ order }: { order: Order }) {
       </header>
       <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 md:p-4 lg:grid-cols-3 xl:grid-cols-4">
         {order.items.map((it, idx) => (
-          <ItemCard key={it.id} item={it} images={images} index={Math.max(0, order.items.slice(0, idx).filter((i) => i.imageData).length)} readOnly={order.confirmed} />
+          <ItemCard key={it.id} item={it} images={images} index={Math.max(0, order.items.slice(0, idx).filter((i) => i.imagePath).length)} readOnly={order.confirmed} />
         ))}
       </div>
     </section>

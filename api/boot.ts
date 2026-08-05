@@ -5,10 +5,22 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
 import { env } from "./lib/env";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+
+// 图片静态文件服务
+const IMAGES_DIR = resolve(process.env.SQLITE_PATH || "./data/app.db", "..", "images");
+const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif" };
+app.get("/images/:filename", (c) => {
+  const fp = resolve(IMAGES_DIR, c.req.param("filename"));
+  if (!existsSync(fp)) return c.notFound();
+  const ext = fp.slice(fp.lastIndexOf(".")).toLowerCase();
+  return c.body(readFileSync(fp), 200, { "Content-Type": MIME[ext] ?? "application/octet-stream", "Cache-Control": "public, max-age=31536000, immutable" });
+});
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",

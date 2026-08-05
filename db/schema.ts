@@ -4,7 +4,7 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 export const products = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  imageData: text("image_data").notNull(), // base64 data URL
+  imagePath: text("image_path").notNull(), // 图片文件路径
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

@@ -15,7 +15,7 @@ export default function ProductsPage() {
   const { open: openLightbox } = useLightbox();
   const productImageMap = useMemo(() => {
     const map = new Map<number, string>();
-    for (const p of products ?? []) map.set(p.id, p.imageData);
+    for (const p of products ?? []) map.set(p.id, `/images/${p.imagePath}`);
     return map;
   }, [products]);
   const createMut = trpc.products.create.useMutation({
@@ -132,7 +132,7 @@ export default function ProductsPage() {
   }
 
   const lightboxImages: LightboxImage[] =
-    products?.map((p) => ({ src: p.imageData, title: p.name })) ?? [];
+    products?.map((p) => ({ src: `/images/${p.imagePath}`, title: p.name })) ?? [];
 
   return (
     <div className="space-y-8">
@@ -326,7 +326,7 @@ export default function ProductsPage() {
                             }`}
                             title={p.name}
                           >
-                            <img src={p.imageData} alt={p.name} className="aspect-square w-full object-cover" />
+                            <img src={`/images/${p.imagePath}`} alt={p.name} className="aspect-square w-full object-cover" />
                             <span className="absolute left-1 top-1">
                               <Checkbox
                                 checked={checked}
@@ -370,7 +370,7 @@ export default function ProductsPage() {
               className="gallery-card group relative overflow-hidden rounded-xl border-2 border-border bg-card shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all hover:border-primary hover:shadow-[0_0_24px_hsl(187_92%_45%/0.25)]"
             >
               <ZoomableImage
-                src={p.imageData}
+                src={`/images/${p.imagePath}`}
                 title={p.name}
                 images={lightboxImages}
                 index={idx}

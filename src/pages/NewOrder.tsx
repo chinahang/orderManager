@@ -63,19 +63,19 @@ export default function NewOrderPage({ role }: { role: Role }) {
     return (mappings ?? []).filter((m) => m.products.some((p) => p.id === productId)).map((m) => m.name);
   }
 
-  function addFromProduct(p: { id: number; name: string; imageData: string }) {
+  function addFromProduct(p: { id: number; name: string; imagePath: string }) {
     // 同一图片可多次点击，生成多条明细；品名按映射预填第一个，可在下拉中改
     const names = namesOfProduct(p.id);
     setItems((prev) => [
       ...prev,
-      { ...emptyItem(roleShopName(role, lang)), productId: p.id, image: p.imageData, name: names[0] ?? "" },
+      { ...emptyItem(roleShopName(role, lang)), productId: p.id, image: `/images/${p.imagePath}`, name: names[0] ?? "" },
     ]);
   }
 
   // 图库按映射分组：每个品名一组其映射图片；无映射的图片归入“未分组”
   const mappedProductIds = new Set((mappings ?? []).flatMap((m) => m.products.map((p) => p.id)));
   const productLookup = new Map(products?.map((p) => [p.id, p]) ?? []);
-  const groups: Array<{ key: string; label: string; products: Array<{ id: number; name: string; imageData: string }> }> = [
+  const groups: Array<{ key: string; label: string; products: Array<{ id: number; name: string; imagePath: string }> }> = [
     ...(mappings ?? []).map((m) => ({
       key: `n-${m.id}`,
       label: m.name,
@@ -135,7 +135,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
         ) : (
           <div className="space-y-4">
             {groups.map((g) => {
-              const images = g.products.map((pr) => ({ src: pr.imageData, title: pr.name }));
+              const images = g.products.map((pr) => ({ src: `/images/${pr.imagePath}`, title: pr.name }));
               return (
                 <div key={g.key}>
                   <h3 className="mb-2 flex items-center gap-2 text-sm font-extrabold text-foreground">
@@ -168,7 +168,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
                             title={p.name}
                           >
                             <div className="aspect-square overflow-hidden">
-                              <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
+                              <img src={`/images/${p.imagePath}`} alt={p.name} className="gallery-img h-full w-full object-cover" />
                             </div>
                             <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
                               {p.name}
@@ -210,7 +210,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
                                 title={p.name}
                               >
                                 <div className="aspect-square overflow-hidden">
-                                  <img src={p.imageData} alt={p.name} className="gallery-img h-full w-full object-cover" />
+                                  <img src={`/images/${p.imagePath}`} alt={p.name} className="gallery-img h-full w-full object-cover" />
                                 </div>
                                 <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
                                   {p.name}
@@ -343,7 +343,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
           open={pickerGroupKey !== null}
           onOpenChange={(v) => { if (!v) setPickerGroupKey(null); }}
           groupName={pickerGroup.label}
-          images={pickerGroup.products.map((p) => ({ id: p.id, src: p.imageData, title: p.name }))}
+          images={pickerGroup.products.map((p) => ({ id: p.id, src: `/images/${p.imagePath}`, title: p.name }))}
           currentCounts={currentCounts}
           onAdd={(idx) => addFromProduct(pickerGroup.products[idx])}
         />

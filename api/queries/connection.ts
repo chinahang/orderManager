@@ -25,7 +25,7 @@ const DDL = `
 CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  image_data TEXT NOT NULL,
+  image_path TEXT NOT NULL,
   created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
 );
 CREATE TABLE IF NOT EXISTS orders (
@@ -73,6 +73,8 @@ export function getDb() {
     sqlite.exec(DDL);
     // 兼容旧库：orders 表新增 confirmed 列
     try { sqlite.exec(`ALTER TABLE orders ADD COLUMN confirmed INTEGER NOT NULL DEFAULT 0`); } catch {} // eslint-disable-line no-empty
+    // 兼容旧库：products 表 image_data → image_path
+    try { sqlite.exec(`ALTER TABLE products RENAME COLUMN image_data TO image_path`); } catch {} // eslint-disable-line no-empty
     instance = drizzle(sqlite, { schema: fullSchema });
   }
   return instance;

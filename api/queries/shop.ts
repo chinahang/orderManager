@@ -1,6 +1,17 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "./connection";
 import { products, orders, orderItems, settings, itemNames, productNameMaps } from "../../db/schema";
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
+import { resolve } from "node:path";
+
+function imagesDir() {
+  const dbDir = resolve(process.env.SQLITE_PATH || "./data/app.db", "..");
+  return resolve(dbDir, "images");
+}
+
+function sanitizedName(name: string) {
+  return name.replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]/g, "_").slice(0, 100);
+}
 
 /* ========== 品名 ↔ 图片 映射（多对多，管理员维护） ========== */
 
@@ -70,19 +81,35 @@ export async function listProducts() {
 
 export async function createProduct(data: { name: string; imageData: string }) {
   const db = getDb();
-  const res = await db.insert(products).values(data);
-  return { id: Number(res.lastInsertRowid) };
+  // 先插入获取 ID
+  const res = await db.insert(products).values({ name: data.name, imagePath: "" });
+  const id = Number(res.lastInsertRowid);
+  // 保存图片文件
+  const filename = `${id}_${sanitizedName(data.name)}.jpg`;
+  const dir = imagesDir();
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const base64 = data.imageData.replace(/^data:image\/[^;]+;base64,/, "");
+  writeFileSync(resolve(dir, filename), Buffer.from(base64, "base64"));
+  // 更新路径
+  await db.update(products).set({ imagePath: filename }).where(eq(products.id, id));
+  return { id };
 }
 
 export async function deleteProduct(id: number) {
-  await getDb().delete(products).where(eq(products.id, id));
+  const db = getDb();
+  const [p] = await db.select().from(products).where(eq(products.id, id));
+  if (p?.imagePath) {
+    const fp = resolve(imagesDir(), p.imagePath);
+    if (existsSync(fp)) unlinkSync(fp);
+  }
+  await db.delete(products).where(eq(products.id, id));
 }
 
 export async function listOrders() {
   const db = getDb();
   const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
   const rows = await db
-    .select({ item: orderItems, imageData: products.imageData, productName: products.name })
+    .select({ item: orderItems, imagePath: products.imagePath, productName: products.name })
     .from(orderItems)
     .leftJoin(products, eq(orderItems.productId, products.id))
     .orderBy(orderItems.id);
@@ -90,7 +117,7 @@ export async function listOrders() {
     ...o,
     items: rows
       .filter((r) => r.item.orderId === o.id)
-      .map((r) => ({ ...r.item, imageData: r.imageData ?? null, productName: r.productName ?? null })),
+      .map((r) => ({ ...r.item, imagePath: r.imagePath ?? null, productName: r.productName ?? null })),
   }));
 }
 
