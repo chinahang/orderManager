@@ -15,6 +15,7 @@ type OrderItem = {
   productId: number | null;
   name: string;
   productName: string | null;
+  productLocation: string | null;
   quantity: number;
   actualQuantity: number | null;
   size: string | null;
@@ -124,6 +125,9 @@ function ItemCard({ item, images, index, readOnly }: { item: OrderItem; images: 
             </span>
             {item.productName && item.productName !== item.name && (
               <span className="block truncate text-xs text-muted-foreground">{item.productName}</span>
+            )}
+            {item.productLocation && (
+              <span className="block truncate text-xs text-muted-foreground/70">📍 {item.productLocation}</span>
             )}
           </div>
           <Checkbox

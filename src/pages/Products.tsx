@@ -3,7 +3,7 @@ import { trpc } from "@/providers/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ImagePlus, Link2, Loader2, Ruler, Trash2, Upload, X, ZoomIn } from "lucide-react";
+import { ImagePlus, Link2, Loader2, MapPin, Package, Pencil, Ruler, Trash2, Upload, X, ZoomIn } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { fileToDataUrl, ZoomableImage, type LightboxImage, useLightbox } from "@/components/ImageLib";
 import { useI18n } from "@/i18n";
@@ -109,7 +109,23 @@ export default function ProductsPage() {
 
   const [name, setName] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const [locationInput, setLocationInput] = useState("");
+  const [availableInput, setAvailableInput] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // 编辑模式
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editLocation, setEditLocation] = useState("");
+  const [editAvailable, setEditAvailable] = useState("");
+
+  const updateMut = trpc.products.update.useMutation({
+    onSuccess: () => {
+      utils.products.list.invalidate();
+      toast.success(t("saved"));
+      setEditId(null);
+    },
+    onError: (e) => toast.error(t("addFailed") + e.message),
+  });
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -125,9 +141,16 @@ export default function ProductsPage() {
   async function onUpload() {
     if (!name.trim()) return toast.error(t("enterName"));
     if (!preview) return toast.error(t("chooseImage"));
-    await createMut.mutateAsync({ name: name.trim(), imageData: preview });
+    await createMut.mutateAsync({
+      name: name.trim(),
+      imageData: preview,
+      location: locationInput.trim() || undefined,
+      available: availableInput ? Number(availableInput) : undefined,
+    });
     setName("");
     setPreview(null);
+    setLocationInput("");
+    setAvailableInput("");
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -153,6 +176,26 @@ export default function ProductsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("productNamePh")}
+              className="border-2 bg-secondary/50 font-medium"
+            />
+          </div>
+          <div className="min-w-40 flex-1 space-y-2">
+            <label className="text-sm font-bold text-foreground">{t("locationLabel")}</label>
+            <Input
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              placeholder={t("locationPh")}
+              className="border-2 bg-secondary/50 font-medium"
+            />
+          </div>
+          <div className="w-28 space-y-2">
+            <label className="text-sm font-bold text-foreground">{t("availableLabel")}</label>
+            <Input
+              type="number"
+              min={0}
+              value={availableInput}
+              onChange={(e) => setAvailableInput(e.target.value)}
+              placeholder="0"
               className="border-2 bg-secondary/50 font-medium"
             />
           </div>
@@ -378,11 +421,69 @@ export default function ProductsPage() {
                 imgClassName="gallery-img h-full w-full object-cover"
               />
               <figcaption className="absolute inset-x-0 bottom-0 border-t-2 border-border bg-background/85 px-3 py-2 backdrop-blur-sm">
-                <p className="truncate text-sm font-bold text-foreground">{p.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("idNo")}
-                  {p.id}
-                </p>
+                {editId === p.id ? (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
+                      <Input
+                        value={editLocation}
+                        onChange={(e) => setEditLocation(e.target.value)}
+                        placeholder={t("locationPh")}
+                        className="h-6 border-0 bg-transparent p-0 text-xs"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Package className="h-3 w-3 flex-shrink-0 text-primary" />
+                      <Input
+                        type="number"
+                        min={0}
+                        value={editAvailable}
+                        onChange={(e) => setEditAvailable(e.target.value)}
+                        placeholder={t("availableLabel")}
+                        className="h-6 w-16 border-0 bg-transparent p-0 text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => updateMut.mutate({ id: p.id, location: editLocation.trim() || undefined, available: editAvailable ? Number(editAvailable) : undefined })}
+                        className="rounded bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground"
+                      >
+                        {t("save")}
+                      </button>
+                      <button
+                        onClick={() => setEditId(null)}
+                        className="rounded bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
+                      >
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="truncate text-sm font-bold text-foreground">{p.name}</p>
+                    {(p.location || p.available != null) && (
+                      <div className="mt-0.5 flex flex-col gap-0.5">
+                        {p.location && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{p.location}</span>
+                          </span>
+                        )}
+                        {p.available != null && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Package className="h-3 w-3 flex-shrink-0" />
+                            <span>{p.available}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {t("idNo")}
+                      {p.id}
+                    </p>
+                  </>
+                )}
               </figcaption>
               <button
                 onClick={() => deleteMut.mutate({ id: p.id })}
@@ -390,6 +491,13 @@ export default function ProductsPage() {
                 title={t("delete")}
               >
                 <Trash2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => { setEditId(p.id); setEditLocation(p.location ?? ""); setEditAvailable(p.available != null ? String(p.available) : ""); }}
+                className="absolute right-2 top-12 rounded-lg border-2 border-border bg-background/80 p-1.5 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:border-primary hover:text-primary group-hover:opacity-100"
+                title={t("edit")}
+              >
+                <Pencil className="h-4 w-4" />
               </button>
             </figure>
           ))}

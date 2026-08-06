@@ -79,10 +79,10 @@ export async function listProducts() {
   return getDb().select().from(products).orderBy(desc(products.createdAt));
 }
 
-export async function createProduct(data: { name: string; imageData: string }) {
+export async function createProduct(data: { name: string; imageData: string; location?: string; available?: number }) {
   const db = getDb();
   // 先插入获取 ID
-  const res = await db.insert(products).values({ name: data.name, imagePath: "" });
+  const res = await db.insert(products).values({ name: data.name, imagePath: "", location: data.location ?? null, available: data.available ?? null });
   const id = Number(res.lastInsertRowid);
   // 保存图片文件
   const filename = `${id}_${sanitizedName(data.name)}.jpg`;
@@ -93,6 +93,16 @@ export async function createProduct(data: { name: string; imageData: string }) {
   // 更新路径
   await db.update(products).set({ imagePath: filename }).where(eq(products.id, id));
   return { id };
+}
+
+export async function updateProduct(id: number, data: { location?: string; available?: number }) {
+  const db = getDb();
+  const set: Record<string, unknown> = {};
+  if (data.location !== undefined) set.location = data.location;
+  if (data.available !== undefined) set.available = data.available;
+  if (Object.keys(set).length > 0) {
+    await db.update(products).set(set).where(eq(products.id, id));
+  }
 }
 
 export async function deleteProduct(id: number) {
@@ -109,7 +119,7 @@ export async function listOrders() {
   const db = getDb();
   const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
   const rows = await db
-    .select({ item: orderItems, imagePath: products.imagePath, productName: products.name })
+    .select({ item: orderItems, imagePath: products.imagePath, productName: products.name, productLocation: products.location })
     .from(orderItems)
     .leftJoin(products, eq(orderItems.productId, products.id))
     .orderBy(orderItems.id);
@@ -117,7 +127,7 @@ export async function listOrders() {
     ...o,
     items: rows
       .filter((r) => r.item.orderId === o.id)
-      .map((r) => ({ ...r.item, imagePath: r.imagePath ?? null, productName: r.productName ?? null })),
+      .map((r) => ({ ...r.item, imagePath: r.imagePath ?? null, productName: r.productName ?? null, productLocation: r.productLocation ?? null })),
   }));
 }
 

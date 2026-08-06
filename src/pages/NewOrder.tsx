@@ -75,7 +75,7 @@ export default function NewOrderPage({ role }: { role: Role }) {
   // 图库按映射分组：每个品名一组其映射图片；无映射的图片归入“未分组”
   const mappedProductIds = new Set((mappings ?? []).flatMap((m) => m.products.map((p) => p.id)));
   const productLookup = new Map(products?.map((p) => [p.id, p]) ?? []);
-  const groups: Array<{ key: string; label: string; products: Array<{ id: number; name: string; imagePath: string }> }> = [
+  const groups: Array<{ key: string; label: string; products: Array<{ id: number; name: string; imagePath: string; location: string | null; available: number | null }> }> = [
     ...(mappings ?? []).map((m) => ({
       key: `n-${m.id}`,
       label: m.name,
@@ -170,8 +170,11 @@ export default function NewOrderPage({ role }: { role: Role }) {
                             <div className="aspect-square overflow-hidden">
                               <img src={`/images/${p.imagePath}`} alt={p.name} className="gallery-img h-full w-full object-cover" />
                             </div>
-                            <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
-                              {p.name}
+                            <span className="absolute inset-x-0 bottom-0 border-t-2 border-border bg-background/85 px-1.5 py-1 text-center backdrop-blur-sm">
+                              <span className="block truncate text-xs font-bold">{p.name}</span>
+                              {p.location && (
+                                <span className="block truncate text-[10px] text-muted-foreground">{p.location}</span>
+                              )}
                             </span>
                             {count > 0 && (
                               <span className="absolute right-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-primary bg-primary px-1 text-xs font-extrabold text-primary-foreground">
@@ -212,8 +215,11 @@ export default function NewOrderPage({ role }: { role: Role }) {
                                 <div className="aspect-square overflow-hidden">
                                   <img src={`/images/${p.imagePath}`} alt={p.name} className="gallery-img h-full w-full object-cover" />
                                 </div>
-                                <span className="absolute inset-x-0 bottom-0 truncate border-t-2 border-border bg-background/85 px-1.5 py-1 text-center text-xs font-bold backdrop-blur-sm">
-                                  {p.name}
+                                <span className="absolute inset-x-0 bottom-0 border-t-2 border-border bg-background/85 px-1.5 py-1 text-center backdrop-blur-sm">
+                                  <span className="block truncate text-xs font-bold">{p.name}</span>
+                                  {p.location && (
+                                    <span className="block truncate text-[10px] text-muted-foreground">{p.location}</span>
+                                  )}
                                 </span>
                                 {count > 0 && (
                                   <span className="absolute right-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-primary bg-primary px-1 text-xs font-extrabold text-primary-foreground">

@@ -5,6 +5,8 @@ export const products = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   imagePath: text("image_path").notNull(), // 图片文件路径
+  location: text("location"), // 位置
+  available: integer("available"), // 可用数量
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

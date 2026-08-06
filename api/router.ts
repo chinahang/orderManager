@@ -3,6 +3,7 @@ import { createRouter, publicQuery } from "./middleware";
 import {
   listProducts,
   createProduct,
+  updateProduct,
   deleteProduct,
   listOrders,
   createOrder,
@@ -24,8 +25,11 @@ export const appRouter = createRouter({
   products: createRouter({
     list: publicQuery.query(() => listProducts()),
     create: publicQuery
-      .input(z.object({ name: z.string().min(1).max(255), imageData: z.string().min(1) }))
+      .input(z.object({ name: z.string().min(1).max(255), imageData: z.string().min(1), location: z.string().optional(), available: z.number().int().optional() }))
       .mutation(({ input }) => createProduct(input)),
+    update: publicQuery
+      .input(z.object({ id: z.number(), location: z.string().optional(), available: z.number().int().optional() }))
+      .mutation(({ input }) => updateProduct(input.id, { location: input.location, available: input.available })),
     delete: publicQuery
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => deleteProduct(input.id)),

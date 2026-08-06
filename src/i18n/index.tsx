@@ -121,6 +121,13 @@ const dict = {
   imgAdded: { en: "Added", zh: "已添加" },
   expandMore: { en: "Show more", zh: "展开更多" },
   collapse: { en: "Collapse", zh: "收起" },
+  locationLabel: { en: "Location", zh: "位置" },
+  locationPh: { en: "e.g. Shelf A-2", zh: "例如：A区货架2层" },
+  availableLabel: { en: "Available", zh: "可用数量" },
+  saved: { en: "Saved", zh: "已保存" },
+  save: { en: "Save", zh: "保存" },
+  cancel: { en: "Cancel", zh: "取消" },
+  edit: { en: "Edit", zh: "编辑" },
 } as const;
 
 export type DictKey = keyof typeof dict;
